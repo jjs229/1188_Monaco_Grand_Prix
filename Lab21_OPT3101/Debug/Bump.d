@@ -19,6 +19,9 @@ Bump.obj: C:/ti/ccs1220/ccs/ccs_base/arm/include/CMSIS/core_cm4.h
 Bump.obj: C:/ti/ccs1220/ccs/ccs_base/arm/include/CMSIS/cmsis_compiler.h
 Bump.obj: C:/ti/ccs1220/ccs/ccs_base/arm/include/CMSIS/cmsis_ccs.h
 Bump.obj: C:/ti/ccs1220/ccs/ccs_base/arm/include/system_msp432p401r.h
+Bump.obj: C:/ti/tirslk_max_1_00_02/inc/Motor.h
+Bump.obj: C:/ti/tirslk_max_1_00_02/inc/PWM.h
+Bump.obj: C:/ti/tirslk_max_1_00_02/inc/Clock.h
 
 C:/ti/tirslk_max_1_00_02/inc/Bump.c:
 
@@ -57,4 +60,10 @@ C:/ti/ccs1220/ccs/ccs_base/arm/include/CMSIS/cmsis_compiler.h:
 C:/ti/ccs1220/ccs/ccs_base/arm/include/CMSIS/cmsis_ccs.h:
 
 C:/ti/ccs1220/ccs/ccs_base/arm/include/system_msp432p401r.h:
+
+C:/ti/tirslk_max_1_00_02/inc/Motor.h:
+
+C:/ti/tirslk_max_1_00_02/inc/PWM.h:
+
+C:/ti/tirslk_max_1_00_02/inc/Clock.h:
 

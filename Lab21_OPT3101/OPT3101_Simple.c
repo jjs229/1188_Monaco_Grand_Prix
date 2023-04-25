@@ -50,18 +50,15 @@ policies, either expressed or implied, of the FreeBSD Project.
 #include "../inc/opt3101.h"
 #include "../inc/LaunchPad.h"
 #include "../inc/UART0.h"
+//#include "BumpInt.c"
 
-void UartSetCur(uint8_t newX, uint8_t newY)
-{
-  if(newX == 6){
-    UART0_OutString("\n\rTxChannel= ");
-    UART0_OutUDec(newY-1);
-    UART0_OutString(" Distance= ");
-  }else{
-    UART0_OutString("\n\r");
-  }
-}
-void UartClear(void){UART0_OutString("\n\r");};
+#include "..\inc\Bump.h"
+#include "..\inc\SysTickInts.h"
+#include "..\inc\Motor.h"
+#include "..\inc\PWM.h"
+#include <string.h>
+#include <stdio.h>
+
 #define Init UART0_Init
 #define Clear UartClear
 #define SetCursor UartSetCur
@@ -81,7 +78,60 @@ uint32_t Error;
 int32_t UR, UL;  // PWM duty 0 to 14,998
 int32_t SetPoint = 250; // mm //was 250
 int32_t LeftDistance,CenterDistance,RightDistance; // mm
+uint32_t ON = 0;
+char hope;
 
+
+//Controller
+#define PWMNOMINAL 14999
+#define SWING 2000
+#define DESIRED 250
+#define TOOFAR 400 // was 400
+
+// assumes track is 500mm
+int32_t Mode=0; // 0 stop, 1 run
+int32_t Ki=1;  // integral controller gain
+int32_t Kp=4;  // proportional controller gain //was 4
+int32_t status = 0;
+
+
+//-----------------Bluetooth stuff--------------------------------------------------------------
+void mapBits(char* x){
+    int N;
+    if(x[0] != 0x0A){
+        char ch = x[0];
+        printf("ch: %c\n", ch);
+        N = (int)(ch)+0;
+    }
+
+
+    switch (N) {
+    case 0x64: // forward
+        ON = 1;
+       break;
+
+    case 0x73: //stop:
+       Motor_Stop();
+       ON = 0;
+       break;
+    default:
+       break;
+    }
+}
+
+//----------------UART--------------------------------------------------------------------------
+
+void UartSetCur(uint8_t newX, uint8_t newY)
+{
+  if(newX == 6){
+    UART0_OutString("\n\rTxChannel= ");
+    UART0_OutUDec(newY-1);
+    UART0_OutString(" Distance= ");
+  }else{
+    UART0_OutString("\n\r");
+  }
+}
+void UartClear(void){UART0_OutString("\n\r");};
 
 bool pollDistanceSensor(void)
 {
@@ -100,20 +150,6 @@ return (1247*left)/2048 + 22;
 int32_t Right(int32_t right){
   return  (right*(59*right + 7305) + 2348974)/32768;
 }
-
-
-//Controller
-#define PWMNOMINAL 14999
-#define SWING 2000
-#define DESIRED 250
-#define TOOFAR 400 // was 400
-
-// assumes track is 500mm
-int32_t Mode=0; // 0 stop, 1 run
-int32_t Ki=1;  // integral controller gain
-int32_t Kp=4;  // proportional controller gain //was 4
-
-
 
 void Controller_Right(void){ // runs at 100 Hz
   if(Mode){
@@ -149,6 +185,12 @@ void Controller_Right(void){ // runs at 100 Hz
   }
 }
 
+volatile uint32_t Time;
+uint8_t Bumper;
+int Semaphore = 0;
+uint16_t max = 9;
+char command[5] = "00000";
+
 void Pause(void){
   int i;
   while(Bump_Read()){ // wait for release
@@ -173,48 +215,56 @@ void Pause(void){
 
 }
 
+void bump(){
+    Bumper = BumpInt_Read();
+    if (Bumper != 0xED){
+        Motor_Stop();
+        Clock_Delay1ms(1000);
+    }
+
+}
 void main(void)
 { // busy-wait implementation
   uint32_t channel = 1;
   Clock_Init48MHz();
   Motor_Init();
-  Odometry_Init(0, 0, 0);
-  EnableInterrupts();
 
-  SysTick->LOAD = 0x00FFFFFF;           // maximum reload value
-  SysTick->CTRL = 0x00000005;           // enable SysTick with no interrupts
+  //Odometry_Init(0, 0, 0);
+  EnableInterrupts();
+//  SysTick->LOAD = 0x00FFFFFF;           // maximum reload value
+//  SysTick->CTRL = 0x00000005;           // enable SysTick with no interrupts
   I2CB1_Init(30); // baud rate = 12MHz/30=400kHz
-  Init();
+//  Init();
   Clear();
-  OutString("OPT3101");
-  SetCursor(0, 1);
-  OutString("Left =");
-  SetCursor(0, 2);
-  OutString("Center=");
-  SetCursor(0, 3);
-  OutString("Right=");
-  SetCursor(0, 4);
-  OutString("Busy-wait");
   OPT3101_Init();
   OPT3101_Setup();
   OPT3101_CalibrateInternalCrosstalk();
   OPT3101_StartMeasurementChannel(channel);
   OPT3101_ArmInterrupts(&TxChannel, Distances, Amplitudes);
 
+  BumpInt_Init();
+
   LPF_Init(100,8);
   LPF_Init2(100,8);
   LPF_Init3(100,8);
 
   //Motor_Forward(10000, 10000);
-  Pause();
+  //Pause();
   StartTime = SysTick->VAL;
+  UART0_Init();
 
   while(1)
   {
-      TimeToConvert = ((StartTime-SysTick->VAL)&0x00FFFFFF)/48000; // msec
+ //     TimeToConvert = ((StartTime-SysTick->VAL)&0x00FFFFFF)/48000; // msec
+      UART0_OutString("hi");
+      while(ON == 0){
+          hope = ((char)(EUSCI_A0->RXBUF));
+          if(hope == 'T'){ON = 1;}
+      }
+
+      while(ON == 1){
       if(TxChannel <= 2)
       {
-
           if(TxChannel==0){
                   if(Amplitudes[0] > 1000){
                     LeftDistance = FilteredDistances[0] = Left(LPF_Calc(Distances[0]));
@@ -235,32 +285,20 @@ void main(void)
                     RightDistance = FilteredDistances[2] = 500;
                   }
                 }
-//          OutUDec(FilteredDistances[TxChannel]);
-//          OutChar(',');
-//          OutUDec(Amplitudes[TxChannel]);
-//          OutChar('\n');
 
           TxChannel = 3;
           channel = (channel+1)%3;
           OPT3101_StartMeasurementChannel(channel);
           StartTime = SysTick->VAL;
           i=i+1;
+          Controller_Right();
+
+          bump();
+
+          hope = ((char)(EUSCI_A0->RXBUF));
+          if(hope == 's'){ON = 0;}
       }
-
-      Controller_Right();
-
-      if(i >= 100){
-            i = 0;
-
-//            SetCursor(3, 5);
-//            OutUDec(SetPoint);
-//            SetCursor(3, 6);
-//            OutUDec(Error);
-//            SetCursor(3, 7);
-//            OutUDec(UL); OutChar(','); OutUDec(UR);
-      }
-        UpdatePosition();
-        Display();
-        WaitForInterrupt();
-  }
+    }
+   }
+     //}
 }

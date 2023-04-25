@@ -11,18 +11,19 @@ GEN_CMDS__FLAG :=
 
 ORDERED_OBJS += \
 "./Bump.obj" \
+"./BumpInt.obj" \
 "./Clock.obj" \
 "./CortexM.obj" \
 "./FFT.obj" \
 "./I2CB1.obj" \
 "./LPF.obj" \
-"./Lab21_OPT3101_TestMain.obj" \
 "./LaunchPad.obj" \
 "./Motor.obj" \
 "./Nokia5110.obj" \
 "./OPT3101_Simple.obj" \
 "./PWM.obj" \
 "./SSD1306.obj" \
+"./SysTickInts.obj" \
 "./TA3InputCapture.obj" \
 "./Tachometer.obj" \
 "./UART0.obj" \
@@ -162,8 +163,8 @@ Lab21_OPT3101.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "Bump.obj" "Clock.obj" "CortexM.obj" "FFT.obj" "I2CB1.obj" "LPF.obj" "Lab21_OPT3101_TestMain.obj" "LaunchPad.obj" "Motor.obj" "Nokia5110.obj" "OPT3101_Simple.obj" "PWM.obj" "SSD1306.obj" "TA3InputCapture.obj" "Tachometer.obj" "UART0.obj" "blinker.obj" "fixed.obj" "odometry.obj" "opt3101.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" 
-	-$(RM) "Bump.d" "Clock.d" "CortexM.d" "FFT.d" "I2CB1.d" "LPF.d" "Lab21_OPT3101_TestMain.d" "LaunchPad.d" "Motor.d" "Nokia5110.d" "OPT3101_Simple.d" "PWM.d" "SSD1306.d" "TA3InputCapture.d" "Tachometer.d" "UART0.d" "blinker.d" "fixed.d" "odometry.d" "opt3101.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" 
+	-$(RM) "Bump.obj" "BumpInt.obj" "Clock.obj" "CortexM.obj" "FFT.obj" "I2CB1.obj" "LPF.obj" "LaunchPad.obj" "Motor.obj" "Nokia5110.obj" "OPT3101_Simple.obj" "PWM.obj" "SSD1306.obj" "SysTickInts.obj" "TA3InputCapture.obj" "Tachometer.obj" "UART0.obj" "blinker.obj" "fixed.obj" "odometry.obj" "opt3101.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" 
+	-$(RM) "Bump.d" "BumpInt.d" "Clock.d" "CortexM.d" "FFT.d" "I2CB1.d" "LPF.d" "LaunchPad.d" "Motor.d" "Nokia5110.d" "OPT3101_Simple.d" "PWM.d" "SSD1306.d" "SysTickInts.d" "TA3InputCapture.d" "Tachometer.d" "UART0.d" "blinker.d" "fixed.d" "odometry.d" "opt3101.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

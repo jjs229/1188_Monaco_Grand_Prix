@@ -26,6 +26,14 @@ OPT3101_Simple.obj: ../../inc/opt3101.h
 OPT3101_Simple.obj: C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdbool.h
 OPT3101_Simple.obj: ../../inc/LaunchPad.h
 OPT3101_Simple.obj: ../../inc/UART0.h
+OPT3101_Simple.obj: ../../inc/Bump.h
+OPT3101_Simple.obj: ../../inc/SysTickInts.h
+OPT3101_Simple.obj: ../../inc/Motor.h
+OPT3101_Simple.obj: ../../inc/PWM.h
+OPT3101_Simple.obj: C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/string.h
+OPT3101_Simple.obj: C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/xlocale/_string.h
+OPT3101_Simple.obj: C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdio.h
+OPT3101_Simple.obj: C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdarg.h
 
 ../OPT3101_Simple.c:
 
@@ -78,4 +86,20 @@ C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdbool.h:
 ../../inc/LaunchPad.h:
 
 ../../inc/UART0.h:
+
+../../inc/Bump.h:
+
+../../inc/SysTickInts.h:
+
+../../inc/Motor.h:
+
+../../inc/PWM.h:
+
+C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/string.h:
+
+C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/xlocale/_string.h:
+
+C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdio.h:
+
+C:/ti/ccs1220/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdarg.h:
 
