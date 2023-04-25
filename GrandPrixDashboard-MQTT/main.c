@@ -536,7 +536,7 @@ int main(int argc, char** argv)
 
     //Calling the Motor Lib init here
     uint16_t duty;
-//    Clock_Init48MHz();
+    Clock_Init48MHz();
 //    LaunchPad_Init();   // built-in switches and LEDs
 //    Bump_Init();        // bump switches
 //    Motor_InitSimple(); // initialization
@@ -545,7 +545,7 @@ int main(int argc, char** argv)
     Bump_Init();
     Odometry_SetPower(7500,5000);
     Odometry_Init(0,0,0);
-    ForwardUntilXStart(1000);
+
 
 
     while(1){
@@ -555,7 +555,8 @@ int main(int argc, char** argv)
             LOOP_FOREVER();
         }
 
-        UpdatePosition();
+//        UpdatePosition();
+//        ForwardUntilXStart(1);
 
 
 
@@ -611,12 +612,11 @@ int main(int argc, char** argv)
         char value[10];
         ltoa(rpmL, value, 10);
         sendMQTTMessage(value, "arf/rpmL", sizeof(rpmL)-1);
-
         ltoa(rpmR, value, 10);
         sendMQTTMessage(value, "arf/rpmR", sizeof(rpmR)-1);
 
         //send distance to object
-        ltoa(rpmL, value, 10);
+        ltoa(Odometry_GetX(), value, 10);
         sendMQTTMessage(value, "arf/distL", sizeof(rpmL)-1);
         ltoa(rpmL, value, 10);
         sendMQTTMessage(rpmR, "arf/distC", sizeof(rpmL)-1);
@@ -743,6 +743,10 @@ static void messageArrived(MessageData* data) {
         msg.retained = 0;
         rc = MQTTPublish(&hMQTTClient, "arf/leftduty", &msg);
         rc = MQTTPublish(&hMQTTClient, "arf/rightduty", &msg);
+    }else if(!strcmp(buf, "right")){
+        Motor_Forward(5000,2500);
+    }else if(!strcmp(buf, "left")){
+        Motor_Forward(2500,5000);
     }
 
 
