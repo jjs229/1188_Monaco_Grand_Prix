@@ -191,30 +191,6 @@ int Semaphore = 0;
 uint16_t max = 9;
 char command[5] = "00000";
 
-void Pause(void){
-  int i;
-  while(Bump_Read()){ // wait for release
-    Clock_Delay1ms(200); LaunchPad_Output(0); // off
-    Clock_Delay1ms(200); LaunchPad_Output(1); // red
-  }
-//  while(Bump_Read()!=0){// wait for touch
-    Clock_Delay1ms(100); LaunchPad_Output(0); // off
-    Clock_Delay1ms(100); LaunchPad_Output(3); // red/green
-  //}
-  while(Bump_Read()){ // wait for release
-    Clock_Delay1ms(100); LaunchPad_Output(0); // off
-    Clock_Delay1ms(100); LaunchPad_Output(4); // blue
-  }
-  for(i=1000;i>100;i=i-200){
-    Clock_Delay1ms(i); LaunchPad_Output(0); // off
-    Clock_Delay1ms(i); LaunchPad_Output(2); // green
-  }
-  // restart Jacki
-  UR = UL = PWMNOMINAL;    // reset parameters
-  Mode = 1;
-
-}
-
 void bump(){
     Bumper = BumpInt_Read();
     if (Bumper != 0xED){
@@ -230,11 +206,11 @@ void main(void)
   Motor_Init();
 
   //Odometry_Init(0, 0, 0);
-  EnableInterrupts();
-//  SysTick->LOAD = 0x00FFFFFF;           // maximum reload value
-//  SysTick->CTRL = 0x00000005;           // enable SysTick with no interrupts
   I2CB1_Init(30); // baud rate = 12MHz/30=400kHz
-//  Init();
+
+  SysTick->LOAD = 0x00FFFFFF;           // maximum reload value
+  SysTick->CTRL = 0x00000005;
+
   Clear();
   OPT3101_Init();
   OPT3101_Setup();
@@ -248,21 +224,20 @@ void main(void)
   LPF_Init2(100,8);
   LPF_Init3(100,8);
 
-  //Motor_Forward(10000, 10000);
-  //Pause();
   StartTime = SysTick->VAL;
   UART0_Init();
-
+  EnableInterrupts();
+  Mode = 1;
   while(1)
   {
  //     TimeToConvert = ((StartTime-SysTick->VAL)&0x00FFFFFF)/48000; // msec
-      UART0_OutString("hi");
       while(ON == 0){
-          hope = ((char)(EUSCI_A0->RXBUF));
-          if(hope == 'T'){ON = 1;}
+          hope = UART0_InChar();
+          if(hope == 'd'){ON = 1;}
       }
 
       while(ON == 1){
+      TimeToConvert = ((StartTime-SysTick->VAL)&0x00FFFFFF)/48000;
       if(TxChannel <= 2)
       {
           if(TxChannel==0){
@@ -272,13 +247,13 @@ void main(void)
                     LeftDistance = FilteredDistances[0] = 500;
                   }
 
-                }else if(TxChannel==1){
+          }else if(TxChannel==1){
                   if(Amplitudes[1] > 1000){
                     CenterDistance = FilteredDistances[1] = LPF_Calc2(Distances[1]);
                   }else{
                     CenterDistance = FilteredDistances[1] = 500;
                   }
-                }else {
+          }else {
                   if(Amplitudes[2] > 1000){
                     RightDistance = FilteredDistances[2] = Right(LPF_Calc3(Distances[2]));
                   }else{
@@ -291,14 +266,24 @@ void main(void)
           OPT3101_StartMeasurementChannel(channel);
           StartTime = SysTick->VAL;
           i=i+1;
+          }
           Controller_Right();
+
+              if(i >= 100){
+                i = 0;
+          //      SetCursor(3, 5);
+          //      OutUDec(SetPoint);
+          //      SetCursor(3, 6);
+          //      OutSDec(Error);
+          //      SetCursor(3, 7);
+          //      OutUDec(UL); OutChar(','); OutUDec(UR);
+              }
 
           bump();
 
           hope = ((char)(EUSCI_A0->RXBUF));
           if(hope == 's'){ON = 0;}
+          //WaitForInterrupt();
       }
-    }
-   }
-     //}
-}
+    } //While(1)
+}// Full Function
