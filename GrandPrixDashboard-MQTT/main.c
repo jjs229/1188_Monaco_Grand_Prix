@@ -75,10 +75,10 @@
  * SimpleLink device will connect to following AP when the application is executed
  */
 //#define SSID_NAME       "ECE DESIGN LAB 2.4"       /* Access point name to connect to. */
-#define SSID_NAME       "Raheel"       /* Access point name to connect to. */
+#define SSID_NAME       "Wifi"       /* Access point name to connect to. */
 #define SEC_TYPE        SL_SEC_TYPE_WPA_WPA2     /* Security type of the Access piont */
 //#define PASSKEY         "ecedesignlab12345"   /* Password in case of secure AP */
-#define PASSKEY         "Nochance"   /* Password in case of secure AP */
+#define PASSKEY         "wifipassword"   /* Password in case of secure AP */
 #define PASSKEY_LEN     pal_Strlen(PASSKEY)  /* Password length in case of secure AP */
 
 /*
@@ -540,11 +540,12 @@ int main(int argc, char** argv)
 //    LaunchPad_Init();   // built-in switches and LEDs
 //    Bump_Init();        // bump switches
 //    Motor_InitSimple(); // initialization
-//    Motor_Init(); // initialization
+    Motor_Init(); // initialization
 //    Motor_Forward(3000,3000);
     Bump_Init();
-//    Odometry_SetPower(7500,5000);
-//    Odometry_Init(0,0,0);
+    Odometry_SetPower(7500,5000);
+    Odometry_Init(0,0,0);
+    ForwardUntilXStart(1000);
 
 
     while(1){
@@ -554,30 +555,31 @@ int main(int argc, char** argv)
             LOOP_FOREVER();
         }
 
-//        UpdatePosition();
-//        ForwardUntilX(10000);
+        UpdatePosition();
 
-        //TODO: Copy this for sending MQTT message - This is the MQTT Send Handler
-        if (publishID) {
-            int rc = 0;
-            MQTTMessage msg;
-            msg.dup = 0;
-            msg.id = 0;
-            msg.payload = uniqueID;
-            msg.payloadlen = 8;
-            msg.qos = QOS0;
-            msg.retained = 0;
-            rc = MQTTPublish(&hMQTTClient, PUBLISH_TOPIC, &msg);
 
-            if (rc != 0) {
-                CLI_Write(" Failed to publish unique ID to MQTT broker \n\r");
-                LOOP_FOREVER();
-            }
-            CLI_Write(" Published unique ID successfully \n\r");
 
-            publishID = 0;
-        }
-        Delay(10);
+//        //TODO: Copy this for sending MQTT message - This is the MQTT Send Handler
+//        if (publishID) {
+//            int rc = 0;
+//            MQTTMessage msg;
+//            msg.dup = 0;
+//            msg.id = 0;
+//            msg.payload = uniqueID;
+//            msg.payloadlen = 8;
+//            msg.qos = QOS0;
+//            msg.retained = 0;
+//            rc = MQTTPublish(&hMQTTClient, PUBLISH_TOPIC, &msg);
+//
+//            if (rc != 0) {
+//                CLI_Write(" Failed to publish unique ID to MQTT broker \n\r");
+//                LOOP_FOREVER();
+//            }
+//            CLI_Write(" Published unique ID successfully \n\r");
+//
+//            publishID = 0;
+//        }
+//        Delay(10);
 
         if(Bump_Read()){
             int rc = 0;
@@ -600,10 +602,27 @@ int main(int argc, char** argv)
             msg.retained = 0;
             rc = MQTTPublish(&hMQTTClient, "arf/bump", &msg);
         }
-
         Delay(10);
 
-        sendMQTTMessage("Message", "arf/bump", 10);
+        //Send RPM
+        int rpmL = 100, rpmR=100;
+//        sendMQTTMessageInt(rpmL, "arf/rpmL", 5);
+//        sendMQTTMessage(rpmR, "arf/rpmR", 5);
+        char value[10];
+        ltoa(rpmL, value, 10);
+        sendMQTTMessage(value, "arf/rpmL", sizeof(rpmL)-1);
+
+        ltoa(rpmR, value, 10);
+        sendMQTTMessage(value, "arf/rpmR", sizeof(rpmR)-1);
+
+        //send distance to object
+        ltoa(rpmL, value, 10);
+        sendMQTTMessage(value, "arf/distL", sizeof(rpmL)-1);
+        ltoa(rpmL, value, 10);
+        sendMQTTMessage(rpmR, "arf/distC", sizeof(rpmL)-1);
+        ltoa(rpmL, value, 10);
+        sendMQTTMessage(rpmR, "arf/distR", sizeof(rpmL)-1);
+
     }
 }
 
@@ -618,6 +637,21 @@ void sendMQTTMessage(char *message[], char *topic[], int length){
     msg.qos = QOS0;
     msg.retained = 0;
     rc = MQTTPublish(&hMQTTClient, topic, &msg);
+    CLI_Write(rc);
+    Delay(10);
+}
+
+void sendMQTTMessageInt(int message, char *topic[], int length){
+    int rc = 0;
+    MQTTMessage msg;
+    msg.dup = 0;
+    msg.id = 0;
+    msg.payload = message;
+    msg.payloadlen = length;
+    msg.qos = QOS0;
+    msg.retained = 0;
+    rc = MQTTPublish(&hMQTTClient, topic, &msg);
+    Delay(10);
 }
 
 static void generateUniqueID() {
