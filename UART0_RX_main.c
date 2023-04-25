@@ -52,9 +52,6 @@ policies, either expressed or implied, of the FreeBSD Project.
 #include "..\inc\CortexM.h"
 
 
-
-
-
 void initMadMax(void){
     // Initialize Port 3.6 3.7    0b 1100 0000
         P3->SEL0 &= ~0xC0;
@@ -79,7 +76,7 @@ void mapBits(char* x){
        LaunchPad_Output(GREEN);
        break;
 
-    case 0x73: //�stop �:
+    case 0x73: // stop
        Motor_Stop();
        LaunchPad_Output(RED);
        break;
@@ -91,10 +88,27 @@ void mapBits(char* x){
 }
 
 
+
 volatile uint32_t Time;
 uint8_t Bumper;
 int Semaphore = 0;
 void SysTick_Handler(void){
+
+    //    uint8_t newMsg = 0;
+        uint16_t max = 9;
+        char command[5] = "00000";
+        UART0_OutString("hi");
+        UART0_OutString("vvvvv");
+
+        UART0_InString(command, max);
+        char* data = strstr(command, "TX="); // Find the position of "TX="
+        if (data != NULL) {
+            data += strlen(" TX="); // Move the pointer past "TX="
+            printf("Data: %s\n", data);
+        }
+    //    get BT
+        mapBits(command);
+
     Time = Time + 1; // every 1ms
     if(Time%10==1){
         Bumper = Bump_Read();
@@ -125,31 +139,23 @@ void main(void){
     UART0_Init();
     SysTick_Init(600, 2);  // set up SysTick for 8 Hz interrupts
     EnableInterrupts(); //cortexM lib// set system clock to 48 MHz
-    //inlcude all inits
+    //inlclude all inits
 
 
 
 
 
-//    uint8_t newMsg = 0;
-    uint16_t max = 9;
-    char command[5] = "00000";
-    UART0_OutString("hi");
-    UART0_OutString("vvvvv");
 
 
   while(1){
 //      read BT
     WaitForInterrupt();
-    UART0_InString(command, max);
-    char* data = strstr(command, "TX="); // Find the position of "TX="
-    if (data != NULL) {
-        data += strlen(" TX="); // Move the pointer past "TX="
-        printf("Data: %s\n", data);
-    }
-//    get BT
-    mapBits(command);
+
+
     Clock_Delay1ms(1000);
+
+
+
 
 
     //put nav program here
