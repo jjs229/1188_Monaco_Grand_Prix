@@ -50,8 +50,8 @@ policies, either expressed or implied, of the FreeBSD Project.
 #include "../inc/opt3101.h"
 #include "../inc/LaunchPad.h"
 #include "../inc/UART0.h"
-//#include "BumpInt.c"
-
+//#include "../inc/BumpInt.c"
+//
 #include "..\inc\Bump.h"
 #include "..\inc\SysTickInts.h"
 #include "..\inc\Motor.h"
@@ -85,13 +85,13 @@ char hope;
 //Controller
 #define PWMNOMINAL 14999
 #define SWING 2000
-#define DESIRED 250
+#define DESIRED 250 //250 og
 #define TOOFAR 400 // was 400
 
 // assumes track is 500mm
 int32_t Mode=0; // 0 stop, 1 run
-int32_t Ki=1;  // integral controller gain
-int32_t Kp=4;  // proportional controller gain //was 4
+int32_t Ki=3.1; //1  // integral controller gain
+int32_t Kp=2; //4 // proportional controller gain //was 4
 int32_t status = 0;
 
 
@@ -196,6 +196,8 @@ void bump(){
     if (Bumper != 0xED){
         Motor_Stop();
         Clock_Delay1ms(1000);
+        Motor_Backward(5000,5000);
+        Clock_Delay1ms(500);
     }
 
 }
@@ -232,6 +234,7 @@ void main(void)
   {
  //     TimeToConvert = ((StartTime-SysTick->VAL)&0x00FFFFFF)/48000; // msec
       while(ON == 0){
+          Motor_Stop();
           hope = UART0_InChar();
           if(hope == 'd'){ON = 1;}
       }
